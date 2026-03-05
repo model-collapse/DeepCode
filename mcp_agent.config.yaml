@@ -103,7 +103,7 @@ mcp:
       env:
         PYTHONPATH: .
 # LLM Provider Priority (选择使用哪个LLM / Choose which LLM to use)
-# Options: "anthropic", "google", "openai"
+# Options: "anthropic", "google", "openai", "bedrock"
 # If not set or provider unavailable, will fallback to first available provider
 llm_provider: "openai"  # 设置为 "google", "anthropic", 或 "openai"
 
@@ -130,5 +130,12 @@ anthropic:
   planning_model: "claude-sonnet-4.5"
   implementation_model: "claude-sonnet-3.5"
 
+bedrock:
+  default_model: "anthropic.claude-3-5-sonnet-20241022-v2:0"
+  planning_model: "anthropic.claude-3-5-sonnet-20241022-v2:0"
+  implementation_model: "anthropic.claude-3-sonnet-20240229-v1:0"
+  aws_region: "us-east-1"
+  base_max_tokens: 20000
+  retry_max_tokens: 15000
 
 planning_mode: traditional

@@ -261,6 +261,25 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
         strip_model_prefix=False,
         model_overrides=(),
     ),
+    ProviderSpec(
+        name="bedrock",
+        keywords=("bedrock", "aws"),
+        env_key="AWS_REGION",
+        display_name="AWS Bedrock",
+        litellm_prefix="bedrock",
+        skip_prefixes=("bedrock/",),
+        env_extras=(
+            ("AWS_ACCESS_KEY_ID", "{api_key}"),
+            ("AWS_SECRET_ACCESS_KEY", "{api_base}"),
+        ),
+        is_gateway=False,
+        is_local=False,
+        detect_by_key_prefix="",
+        detect_by_base_keyword="bedrock",
+        default_api_base="us-east-1",
+        strip_model_prefix=False,
+        model_overrides=(),
+    ),
 )
 
 

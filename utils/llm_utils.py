@@ -51,6 +51,12 @@ def get_api_keys(secrets_path: str = "mcp_agent.secrets.yaml") -> Dict[str, str]
             or os.environ.get("OPENAI_API_KEY")
             or ""
         ).strip(),
+        "bedrock": {
+            "aws_region": secrets.get("bedrock", {}).get("aws_region", "") or os.environ.get("AWS_REGION", "us-east-1"),
+            "aws_access_key_id": secrets.get("bedrock", {}).get("aws_access_key_id", "") or os.environ.get("AWS_ACCESS_KEY_ID", ""),
+            "aws_secret_access_key": secrets.get("bedrock", {}).get("aws_secret_access_key", "") or os.environ.get("AWS_SECRET_ACCESS_KEY", ""),
+            "profile": secrets.get("bedrock", {}).get("profile", ""),
+        },
     }
 
 
@@ -102,6 +108,10 @@ def _get_llm_class(provider: str) -> Type[Any]:
         from mcp_agent.workflows.llm.augmented_llm_google import GoogleAugmentedLLM
 
         return GoogleAugmentedLLM
+    elif provider == "bedrock":
+        from utils.augmented_llm_bedrock import BedrockAugmentedLLM
+
+        return BedrockAugmentedLLM
     else:
         raise ValueError(f"Unknown provider: {provider}")
 
@@ -137,11 +147,16 @@ def get_preferred_llm_class(config_path: str = "mcp_agent.secrets.yaml") -> Type
                 main_config = yaml.safe_load(f)
                 preferred_provider = main_config.get("llm_provider", "").strip().lower()
 
+        # Bedrock credentials (dict, not a simple key)
+        bedrock_creds = keys.get("bedrock", {})
+        bedrock_key = bedrock_creds.get("aws_access_key_id", "") or bedrock_creds.get("profile", "")
+
         # Map of providers to their keys and class names
         provider_keys = {
             "anthropic": (anthropic_key, "AnthropicAugmentedLLM"),
             "google": (google_key, "GoogleAugmentedLLM"),
             "openai": (openai_key, "OpenAIAugmentedLLM"),
+            "bedrock": (bedrock_key, "BedrockAugmentedLLM"),
         }
 
         # Try user's preferred provider first
@@ -254,6 +269,11 @@ def get_default_models(config_path: str = "mcp_agent.config.yaml"):
             openai_implementation = openai_config.get(
                 "implementation_model", openai_model
             )
+            # Bedrock
+            bedrock_config = config.get("bedrock") or {}
+            bedrock_model = bedrock_config.get("default_model", "anthropic.claude-3-5-sonnet-20241022-v2:0")
+            bedrock_planning = bedrock_config.get("planning_model", bedrock_model)
+            bedrock_implementation = bedrock_config.get("implementation_model", bedrock_model)
 
             return {
                 "anthropic": anthropic_model,
@@ -265,6 +285,9 @@ def get_default_models(config_path: str = "mcp_agent.config.yaml"):
                 "anthropic_implementation": anthropic_implementation,
                 "openai_planning": openai_planning,
                 "openai_implementation": openai_implementation,
+                "bedrock": bedrock_model,
+                "bedrock_planning": bedrock_planning,
+                "bedrock_implementation": bedrock_implementation,
             }
         else:
             print(f"Config file {config_path} not found, using default models")
@@ -280,6 +303,7 @@ def _get_fallback_models():
     google = "gemini-2.0-flash"
     anthropic = "claude-sonnet-4-20250514"
     openai = "o3-mini"
+    bedrock = "anthropic.claude-3-5-sonnet-20241022-v2:0"
     return {
         "google": google,
         "google_planning": google,
@@ -290,6 +314,9 @@ def _get_fallback_models():
         "openai": openai,
         "openai_planning": openai,
         "openai_implementation": openai,
+        "bedrock": bedrock,
+        "bedrock_planning": bedrock,
+        "bedrock_implementation": bedrock,
     }
 
 

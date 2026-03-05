@@ -672,6 +672,12 @@ anthropic:
 
 google:
   api_key: "your_google_api_key"     # For Gemini models
+
+# AWS Bedrock (alternative to direct Anthropic API)
+bedrock:
+  aws_region: "us-east-1"
+  aws_access_key_id: ""              # Or use IAM roles / AWS profiles
+  aws_secret_access_key: ""
 ```
 
 #### 🤖 LLM Provider *(optional)*
@@ -679,10 +685,12 @@ google:
 Edit `mcp_agent.config.yaml` to choose your preferred LLM provider (line ~106):
 
 ```yaml
-# Options: "google", "anthropic", "openai"
+# Options: "google", "anthropic", "openai", "bedrock"
 # If not set or unavailable, will automatically fallback to first available provider
 llm_provider: "google"
 ```
+
+> **AWS Bedrock**: For using Claude models via AWS Bedrock (useful for enterprise AWS environments), see the [Bedrock Setup Guide](docs/bedrock_setup_guide.md).
 
 #### 🔍 Search API Keys *(optional)*
 
